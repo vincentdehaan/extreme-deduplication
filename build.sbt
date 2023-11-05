@@ -1,10 +1,12 @@
 import Dependencies._
 
+import scala.io.Source
+
 name := "extreme-deduplication"
 
 version := "0.1"
 
-scalaVersion := "2.13.12"
+ThisBuild / scalaVersion := "2.13.12"
 
 lazy val writer = TaskKey[Unit]("writer")
 
@@ -28,7 +30,16 @@ lazy val openapi = (project in file("openapi"))
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % tapirVersion,
       "com.softwaremill.sttp.apispec" %% "openapi-circe-yaml" % apiSpecVersion
     ),
-    writer := (Compile / runMain).toTask(" nl.vindh.extdup.openapi.DocWriter").value
+    writer := (Compile / runMain).toTask(s" nl.vindh.extdup.openapi.DocWriter").value
   )
 
 lazy val domain = (project in file("domain"))
+  .enablePlugins(ScalaTsiPlugin)
+  .settings(
+    typescriptExports :=
+      Source.fromInputStream(
+        java.lang.Runtime.getRuntime.exec("find domain/src/main/scala/ -type f -exec cat {} +").getInputStream
+      ).getLines().flatMap(l => """case class ([a-zA-Z]+)""".r.findFirstMatchIn(l).map(_.subgroups(0))).toSeq,
+    typescriptOutputFile := baseDirectory.value / "target/index.d.ts",
+    typescriptGenerationImports := Seq("nl.vindh.extdup.domain._")
+  )
