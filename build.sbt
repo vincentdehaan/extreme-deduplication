@@ -43,3 +43,15 @@ lazy val domain = (project in file("domain"))
     typescriptOutputFile := baseDirectory.value / "target/index.d.ts",
     typescriptGenerationImports := Seq("nl.vindh.extdup.domain._")
   )
+
+lazy val dbinfo = (project in file("dbinfo"))
+  .dependsOn(domain)
+  .settings(
+    libraryDependencies += "com.chuusai" %% "shapeless" % shapelessVersion
+  )
+
+lazy val cloudformation = (project in file("cloudformation"))
+  .dependsOn(dbinfo)
+  .settings(
+    libraryDependencies += "io.jobial" %% "cloud-formation-template-generator" % "3.10.4"
+  )
