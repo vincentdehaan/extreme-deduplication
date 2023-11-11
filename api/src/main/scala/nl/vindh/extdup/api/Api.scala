@@ -15,6 +15,13 @@ class Api(service: Service) {
       .in("foo")
       .in(jsonBody[Foo])
       .out(statusCode(StatusCode.Accepted))
-      .serverLogic(service.createFoo)
+      .serverLogic(service.createFoo),
+
+    endpoint
+      .get
+      .in("foo")
+      .in(query[String]("name"))
+      .out(jsonBody[Foo])
+      .serverLogic(service.getFooByName)
   )
 }

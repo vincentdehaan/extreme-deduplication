@@ -6,4 +6,6 @@ import scala.concurrent.Future
 
 trait Service {
   def createFoo(foo: Foo): Future[Either[Unit, Unit]]
+
+  def getFooByName(name: String): Future[Either[Unit, Foo]]
 }

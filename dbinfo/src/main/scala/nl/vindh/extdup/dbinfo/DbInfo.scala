@@ -1,8 +1,10 @@
 package nl.vindh.extdup.dbinfo
 
-import nl.vindh.extdup.domain.Foo
+import nl.vindh.extdup.domain.{Bar, Foo}
 import shapeless._
+import shapeless.labelled.FieldType
 import shapeless.ops.record._
+
 import scala.language.experimental.macros
 
 case class TypedTable[T : Typeable, I <: HList] private(indices: Seq[String]) {
@@ -24,6 +26,9 @@ object Table {
 }
 
 object Tables {
-  val tables = Table.create[Foo]
-    .withIndex(Symbol("name")) :: HNil
+  val tables =
+    Table.create[Foo]
+      .withIndex(Symbol("name")) ::
+    Table.create[Bar]
+      .withIndex(Symbol("barName")) :: HNil
 }

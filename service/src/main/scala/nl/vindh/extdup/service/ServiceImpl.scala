@@ -5,10 +5,10 @@ import nl.vindh.extdup.domain.Foo
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ServiceImpl(implicit ec: ExecutionContext) extends Service {
+class ServiceImpl(fooRepository: FooRepository)(implicit ec: ExecutionContext) extends Service {
   def createFoo(foo: Foo): Future[Either[Unit, Unit]] =
-    Future {
-      println(s"Creating foo $foo")
-      Right(())
-    }
+    fooRepository.put(foo).map(Right(_))
+
+  override def getFooByName(name: String): Future[Either[Unit, Foo]] =
+    fooRepository.getByName(name).map(Right(_))
 }

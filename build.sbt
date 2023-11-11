@@ -11,7 +11,10 @@ ThisBuild / scalaVersion := "2.13.12"
 lazy val writer = TaskKey[Unit]("writer")
 
 lazy val service = (project in file("service"))
-  .dependsOn(domain, api)
+  .dependsOn(domain, api, dbinfo)
+  .settings(
+    libraryDependencies += "org.scanamo" %% "scanamo" % "1.0.0-M29"
+  )
 
 lazy val api = (project in file("api"))
   .dependsOn(domain)
