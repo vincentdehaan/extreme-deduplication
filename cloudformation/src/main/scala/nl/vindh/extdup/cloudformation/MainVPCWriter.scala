@@ -3,7 +3,7 @@ package nl.vindh.extdup.cloudformation
 import com.monsanto.arch.cloudformation.model.resource.BillingMode.PAY_PER_REQUEST
 import com.monsanto.arch.cloudformation.model.resource._
 import com.monsanto.arch.cloudformation.model.{Template, VPCWriter}
-import nl.vindh.extdup.dbinfo.{Table, Tables, TypedTable}
+import nl.vindh.extdup.dbinfo.{TableInfo, Tables, TypedTable}
 import shapeless._
 
 object MainVPCWriter extends VPCWriter {
@@ -16,10 +16,10 @@ object MainVPCWriter extends VPCWriter {
 
   def tables() =
     Template(
-      Resources = Tables.tables.map(toTable).toList[Table].map(tableTemplate)
+      Resources = Tables.tables.map(toTable).toList[TableInfo[_]].map(tableTemplate)
     )
 
-  def tableTemplate(table: Table): `AWS::DynamoDB::Table` =
+  def tableTemplate(table: TableInfo[_]): `AWS::DynamoDB::Table` =
     `AWS::DynamoDB::Table`(
       name = s"${table.name}-table",
       AttributeDefinitions =
@@ -29,17 +29,17 @@ object MainVPCWriter extends VPCWriter {
       GlobalSecondaryIndexes =
         table.indices.map {
           idx => GlobalSecondaryIndex(
-            IndexName = s"by$idx",
+            IndexName = idx,
             KeySchema = Seq(KeySchema(idx, HashKeyType)),
             Projection = AllProjection
           )
         },
       LocalSecondaryIndexes = Seq(),
-      TableName = Some(s"resources-${table.name}-table")
+      TableName = Some(table.name)
     )
 
   object toTable extends Poly1 {
-    implicit def tableCase[T, I <: HList]: Case[TypedTable[T, I]] { type Result = Table } =
-      at(_.toTable)
+    implicit def tableCase[T, I <: HList]: Case[TypedTable[T, I]] { type Result = TableInfo[T] } =
+      at(_.toTableInfo)
   }
 }

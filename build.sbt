@@ -13,7 +13,10 @@ lazy val writer = TaskKey[Unit]("writer")
 lazy val service = (project in file("service"))
   .dependsOn(domain, api, dbinfo)
   .settings(
-    libraryDependencies += "org.scanamo" %% "scanamo" % "1.0.0-M29"
+    libraryDependencies ++= Seq(
+      "org.scanamo" %% "scanamo" % scanamoVersion,
+      "org.scanamo" %% "scanamo-testkit" % scanamoVersion
+    )
   )
 
 lazy val api = (project in file("api"))

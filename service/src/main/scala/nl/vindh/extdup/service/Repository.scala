@@ -1,6 +1,6 @@
 package nl.vindh.extdup.service
 
-import nl.vindh.extdup.dbinfo.{Tables, TypedTable}
+import nl.vindh.extdup.dbinfo.{TableInfo, Tables, TypedTable}
 import nl.vindh.extdup.domain.Foo
 import org.scanamo.{DynamoFormat, Scanamo, Table}
 import org.scanamo.syntax._
@@ -15,10 +15,11 @@ abstract class Repository[T: DynamoFormat] {
 
   implicit val ec: ExecutionContext
   protected val scanamoClient = Scanamo(client)
-  protected val table: Table[T] = Table[T](???)
+  protected val tableInfo: TableInfo[T]
+  protected lazy val table: Table[T] = Table[T](tableInfo.name)
 
   object tableSelector extends Poly1 {
-    implicit def thisCase[H <: HList] = at[TypedTable[T, H]](x => x :: HNil)
+    implicit def thisCase[H <: HList] = at[TypedTable[T, H]](_ :: HNil)
     implicit def otherCase[U, H <: HList](implicit ev: U =:!= T) = at[TypedTable[U, H]](_ => HNil)
   }
 
