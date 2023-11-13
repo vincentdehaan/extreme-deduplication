@@ -16,7 +16,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class FooRepository(implicit val ec: ExecutionContext, val client: DynamoDbClient) extends Repository[Foo] {
   implicit val thisTable = Tables.tables.flatMap(tableSelector).head
   val tableInfo: TableInfo[Foo] = thisTable.toTableInfo
-  println(table)
 
   def getByName(name: String): Future[Foo] =
     getByIndex(Symbol("name"), name)

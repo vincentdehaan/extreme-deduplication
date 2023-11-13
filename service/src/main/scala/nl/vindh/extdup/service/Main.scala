@@ -32,21 +32,5 @@ object Main extends App {
   val bindingFuture = Http().newServerAt("0.0.0.0", 8080).bind(
     AkkaHttpServerInterpreter().toRoute(api.endpoints))
 
-  Future {
-    println("BLA")
-    Thread.sleep(1000)
-    println("VBLI")
-    val x = for {
-      r <- fooRepo.put(Foo("ha", 1, "ho"))
-      _ = println(r)
-      rr <- fooRepo.getByName("ha")
-      _ = println(rr)
-    } yield ()
-    x.recover {
-      case ex => println(ex); throw ex
-    }
-    println(":BELw")
-  }
-
   StdIn.readLine()
 }

@@ -15,6 +15,7 @@ class Api(service: Service) {
       .in("foo")
       .in(jsonBody[Foo])
       .out(statusCode(StatusCode.Accepted))
+      .description("Use this endpoint to create a foo")
       .serverLogic(service.createFoo),
 
     endpoint
@@ -22,6 +23,7 @@ class Api(service: Service) {
       .in("foo")
       .in(query[String]("name"))
       .out(jsonBody[Foo])
+      .description("Use this endpoint to retrieve a foo")
       .serverLogic(service.getFooByName)
   )
 }
