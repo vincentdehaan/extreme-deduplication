@@ -125,6 +125,20 @@ build.sbt:
 libraryDependencies += "com.softwaremill.sttp.tapir" %% "tapir-core" % tapirVersion
 \end{lstlisting}
 \pause
+\begin{columns}
+\begin{column}{0.4\textwidth}
+\begin{lstlisting}[style=myScalaStyle,frame=none]
+POST /foo
+Content-Type: application/json
+{
+  "name": "foo's name", 
+  "id": 1,
+  "description":"foo's description"
+}
+\end{lstlisting}
+\end{column}
+\pause
+\begin{column}{0.6\textwidth}
 Api.scala:
 \begin{lstlisting}[style=myScalaStyle,frame=none]
 class Api(service: Service){
@@ -140,6 +154,8 @@ class Api(service: Service){
 }
 
 \end{lstlisting}
+\end{column}
+\end{columns}
 
 \end{frame}
 
@@ -362,17 +378,40 @@ val tables =
 
 \end{frame}
 
+\begin{frame}[fragile]
+\frametitle{Database requirement 1}
+I can only create a \texttt{Repository[T]} if a table for objects of type \texttt{T} exists in the infrastructure code.
+\hfill \break
+\begin{lstlisting}[style=myScalaStyle,frame=none,escapeinside=||,numbers=left]
+abstract class Repository[T: DynamoFormat] {
+  protected val tableInfo: TableInfo[T]
+
+  object tableSelector extends Poly1 {
+    implicit def thisCase[H <: HList] = at[TypedTable[T, H]](_ :: HNil)
+    implicit def otherCase[U, H <: HList](implicit ev: U =:!= T) = at[TypedTable[U, H]](_ => HNil)
+  }
+}
+|\pause|
+class FooRepository extends Repository[Foo] {
+  val tableInfo: TableInfo[Foo] = Tables.tables.flatMap(tableSelector).head.toTableInfo
+}
+
+\end{lstlisting}
+
+\end{frame}
+
 
 \begin{frame}[fragile]
 \frametitle{Database requirement 2}
 I can only create an index for a field \texttt{f} if \texttt{f} is a field of type \texttt{T}.
 \hfill \break
 \begin{lstlisting}[style=myScalaStyle,frame=none,escapeinside=||]
+case class Foo(name: String, id: Int, description: String)
 
-case class Table(name: String,  indices: Seq[String])
+case class Table[T](indices: Seq[String])
 
 val Tables = Seq(
-  Table("Foo",  Seq("name"))
+  Table[Foo](Seq("name"))
 )
 
 \end{lstlisting}
@@ -472,6 +511,7 @@ abstract class Repository[T] {
     Future(scanamoClient.exec(table.get(idx.value.asInstanceOf[Symbol].name === value)))
 }
 class FooRepository extends Repository[Foo] {
+  implicit val thisTable = Tables.tables.flatMap(tableSelector).head
   def getByName(name: String): Future[Foo] =
     getByIndex(Symbol("name"), name)
 }
